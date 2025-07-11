@@ -1,6 +1,6 @@
 ## DoClasiq
 
-A document classifier with ability to both classify and extract structured information from company documents. Classification is done using a fine-tuned version of LayoutLMv2ForSequenceClassification from HuggingFace Transformers library.
+A document classification and data extraction Web App for company documents. Classification is done using a fine-tuned version of LayoutLMv2ForSequenceClassification from HuggingFace Transformers library. Rule-based structured data extraction is done using predefined configuration for each class of documents.
 
 **Fine-tuned model is available on Hugging Face. no need to run training. just follow section 2 to run the app.**  
 
