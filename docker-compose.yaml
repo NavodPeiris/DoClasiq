@@ -1,0 +1,15 @@
+version: "2"
+services:
+  api:
+    image: navodevil/doclasiq_api
+    container_name: doclasiq_api
+    hostname: doclasiq_api
+    ports:
+      - "8001:8001"
+
+  ui:
+    image: navodevil/doclasiq_ui
+    container_name: doclasiq_ui
+    hostname: doclasiq_ui
+    ports:
+      - "8502:8502"
