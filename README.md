@@ -6,9 +6,9 @@ A document classification and data extraction Web App for company documents. Cla
 
 Dataset used: [Company Documents Dataset](https://www.kaggle.com/datasets/navodpeiris/company-documents-dataset)  
 
-fine-tuned model link: [navodPeiris/layoutlmv2-document-classifier](https://huggingface.co/navodPeiris/layoutlmv2-document-classifier)
+Fine-tuned model link: [navodPeiris/layoutlmv2-document-classifier](https://huggingface.co/navodPeiris/layoutlmv2-document-classifier)
 
-base model link: [microsoft/layoutlmv2-base-uncased](https://huggingface.co/microsoft/layoutlmv2-base-uncased)
+Base model link: [microsoft/layoutlmv2-base-uncased](https://huggingface.co/microsoft/layoutlmv2-base-uncased)
 
 #### Tech Stack: Python, Streamlit, FastAPI, Docker, Uvicorn, Gunicorn, Transformers, LayoutLMv2, pytesseract, PyMuPDF, Kaggle Datasets, Tensorboard
 
@@ -25,14 +25,26 @@ base model link: [microsoft/layoutlmv2-base-uncased](https://huggingface.co/micr
 - Kaggle Datasets: used to load dataset in Kaggle notebook
 - Tensorboard: used for logging training metrics like train_loss, train_accuracy, eval_loss, eval_accuracy
 
-### 1. Run training (optional)
+#### Dataset Description
+
+This dataset contains a collection of over 2,000 company documents.  
+
+There are 5 categories:  
+
+- inventory_monthly: monthly inventory summary for set of categories  
+- inventory_monthly_category: monthly inventory summary focusing a specific category  
+- invoices: invoices of company  
+- purchase_orders: purchase orders received  
+- shipping_orders: shipping orders received  
+
+### 1. Training (optional)
 
 #### Run training:
 Run this kaggle notebook (use P100 gpu not T4x2): [finetune_doclasiq_model](https://www.kaggle.com/code/navodpeiris/finetune-doclasiq-model)
 
 Note: don't run the last cell unless you are pushing to a Hugging Face repo. If pushing to a Hugging Face repo set repo_id and token on TrainingArguments correctly.
 
-#### Visualize training details(loss, accuracy etc):
+#### Visualize training details of my run (loss, accuracy etc):
 ```
 pip install tensorboard
 cd train
@@ -66,7 +78,7 @@ Model has acheived **0.0008 evaluation loss** and **1.0 evaluation accuracy**
 
 #### Why streamlit for UI?
 
-Streamlit is easy to use and integrate well with any python workload related to ML
+Streamlit is easy to use and integrate well with any python workload related to ML.
 
 #### Why use FastAPI with Uvicorn and Gunicorn 
 
@@ -82,7 +94,7 @@ This command plugs Uvicorn into Gunicorn as a worker and here it spawns 4 worker
 
 #### Why Docker?
 
-It makes running this solution easy and seamless. works perfectly across platforms.
+It makes running this solution easy and seamless. works perfectly across platforms. Multi-stage docker builds were used to reduce Image size.
 
 ### 6. How document classification work
 
@@ -92,7 +104,15 @@ Model used for classification is LayoutLMv2.
 
 LayoutLMv2 performs document classification by jointly encoding the text content, layout structure, and visual appearance of a document. First, it extracts words using tesseract OCR engine and embeds each token along with its bounding box coordinates. Then, visual features are extracted from the entire image using a convolutional neural network and fused with the token embeddings. This fusion allows the model to understand not only what is written, but where it is written and how it appears, capturing the document’s structure. The combined embeddings are passed through a multimodal Transformer that models the interactions among tokens, their spatial layout, and visual context. For classification tasks (e.g., invoice vs. receipt), a [CLS] token is used at the beginning of the sequence to aggregate information, and its final hidden state is passed through a classifier head to predict the document’s class. This makes LayoutLMv2 highly effective for real-world documents where text alone is insufficient due to layout dependencies.
 
-I use LayoutLMv2 model which was fine-tuned on Company Documents Dataset. Model is loaded at FastAPI start up and served to incoming requests.
+I have fine-tuned LayoutLMv2 model on Company Documents Dataset and uploaded it to Hugging Face hub. Model is then downloaded and cached at doclasiq_api Docker Image build time. Model caching ensures fast start up of service. Model is loaded at FastAPI start up and served to incoming requests.
+
+Model use the first page of the document for classifying it to a class as first page of a document is the key page that contain some header texts, layout that differentiate it from other documents. Naturally as humans, even we can classify a document by just looking at the first page.
+
+#### Inference steps:
+- First page of uploaded PDF document is converted to PIL image and sent to LayoutLMv2Processor which output encodings
+- Returned encodings are sent to fine-tuned LayoutLMv2ForSequenceClassification model for classifying to a class
+
+Note: LayoutLMv2Processor is the preprocessing tool used for preprocessing document to the required input format needed by LayoutLMv2ForSequenceClassification model. same preprocessing was followed during training.
 
 entropy of softmax output is used to reject confidently wrong outputs for unrelated documents and always classify those unrelated documents as "unknown" type documents. Extraction is not performed for "unknown" documents.
 
