@@ -39,64 +39,58 @@ def health_check():
 
 # Route to serve the web page
 @app.post("/api/classify")
-def list_files(file: UploadFile = File(...)):
-    
+def list_files(file: UploadFile = File(...)):   
     file_location = os.path.join(UPLOAD_FOLDER, file.filename)
-        
-    # Save the file
-    with open(file_location, "wb") as f:
-        shutil.copyfileobj(file.file, f)
+    try:
+        with open(file_location, "wb") as f:
+            shutil.copyfileobj(file.file, f)
 
-    content_type = file.content_type.lower()
+        if file.content_type.lower() != "application/pdf":
+            raise HTTPException(status_code=400, detail="Unsupported file type. Only PDF files are allowed.")
 
-    raw_text = ""
-        
-    if(content_type == "application/pdf"):
-        # Load PDF and render first page
-        doc = fitz.open(file_location)
+        raw_text = ""
 
-        for page in doc:
-            raw_text += page.get_text()
+        with fitz.open(file_location) as doc:
+            for page in doc:
+                raw_text += page.get_text()
+            page = doc.load_page(0)
+            pix = page.get_pixmap(dpi=200)
+            img_bytes = pix.tobytes("png")
+            del pix  # Free pixmap memory
 
-        page = doc.load_page(0)
-        pix = page.get_pixmap(dpi=200)
+        with Image.open(io.BytesIO(img_bytes)) as img:
+            image = img.convert("RGB").copy()
 
-        # Convert Pixmap to bytes
-        img_bytes = pix.tobytes("png")
+        encoding = processor(image, return_tensors="pt", truncation=True, padding="max_length", max_length=512)
+        outputs = model(**encoding)
+        logits = outputs.logits
+        probs = F.softmax(logits, dim=1)
 
-        # Load into PIL.Image
-        image = Image.open(io.BytesIO(img_bytes)).convert("RGB")
-        print("image: ", image)
-        doc.close()
+        # get entropy of softmax output
+        entropy = -torch.sum(probs * torch.log(probs + 1e-12), dim=1).item()
 
-        os.remove(file_location)  # Remove file after processing
-    else:
-        os.remove(file_location)  # Remove file after processing
-        raise HTTPException(status_code=400, detail="Unsupported file type. Only PDF files are allowed.")
+        print("entropy: ", entropy)
 
-    encoding = processor(image, return_tensors="pt", truncation=True, padding="max_length", max_length=512)
+        predicted_class_id = logits.argmax(dim=1).item()
+        classified_output = model.config.id2label[predicted_class_id]
 
-    outputs = model(**encoding)
-    logits = outputs.logits
+        # if entropy value is lower than threshold, model is more confident about the classified class
+        # threshold entropy was decided through testing
+        if entropy < 0.15:
+            print(f"Predicted class: {classified_output}")
+            extracted_data = extract_info(raw_text, classified_output)
+        else:
+            # unknown documents give high entropy
+            classified_output = "unknown"
+            extracted_data = []
+            print(f"Predicted class: {classified_output}")
 
-    probs = F.softmax(logits, dim=1)
+        # release memory
+        del image, encoding, outputs, logits, probs, raw_text, file
+        torch.cuda.empty_cache()
 
-    # get entropy of softmax output
-    entropy = -torch.sum(probs * torch.log(probs + 1e-12), dim=1).item()
+        return {"classified_output": classified_output, "extracted_data": extracted_data}
 
-    print("entropy: ", entropy)
-    
-    predicted_class_id = logits.argmax(dim=1).item()
-    classified_output = model.config.id2label[predicted_class_id]
-
-    # if entropy value is lower than threshold, model is more confident about the classified class
-    if entropy < 0.15:
-        print(f"Predicted class: {classified_output}")
-        extracted_data = extract_info(raw_text, classified_output)
-    else:
-        # unknown documents give high
-        classified_output = "unknown"
-        extracted_data = []
-        print(f"Predicted class: {classified_output}")
-
-    return {"classified_output": classified_output, "extracted_data": extracted_data}
+    finally:
+        if os.path.exists(file_location):
+            os.remove(file_location)

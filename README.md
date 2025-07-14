@@ -68,11 +68,15 @@ Use test documents in test_docs folder to test
 
 ### 4. Performance
 
-Model Performance:
+Model Training Performance:
 
-![model_performance](tensorboard_view.png)
+![model_trainining_performance](tensorboard_view.png)
 
 Model has acheived **0.0008 evaluation loss** and **1.0 evaluation accuracy**
+
+Model Inference Performance:
+
+![model_inference_performance]()
 
 ### 5. Design choices
 

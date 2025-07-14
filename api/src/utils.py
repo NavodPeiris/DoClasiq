@@ -1,314 +1,4 @@
-
-# ---------------------structure configurations for data extraction----------------------
-inventory_monthly_config = {
-    "structures": [
-        {
-            "structure_type": "text line",
-            "starts_with": "Stock Report",
-            "next_starts_with": "Category",
-            "name": "title",
-            "type": "string",
-            "remove": "", # text to remove from the line
-            "ignore": False
-        },
-        {
-            "structure_type": "table",
-            "starts_with": "Category",
-            "next_starts_with": "",    # starting text of next item (empty means no next item)
-            "name": "Inventory Table",
-            "columns": 5,
-            "headers": ["Category", "Product", "Units Sold", "Units in Stock", "Unit Price"],
-            "fields": [
-                {"name": "Category", "type": "string", "remove": ""},
-                {"name": "Product", "type": "string", "remove": ""},
-                {"name": "Units Sold", "type": "integer", "remove": ""},
-                {"name": "Units in Stock", "type": "integer", "remove": ""},
-                {"name": "Unit Price", "type": "float", "remove": ""}
-            ],
-        }
-    ]
-}
-
-inventory_monthly_category_config = {
-    "structures": [
-        {
-            "structure_type": "text line",
-            "starts_with": "Stock Report",
-            "next_starts_with": "Category :",
-            "name": "title",
-            "type": "string",
-            "remove": "",
-            "ignore": False
-        },
-        {
-            "structure_type": "text line",
-            "starts_with": "Category :",
-            "next_starts_with": "id category",
-            "name": "category",
-            "type": "string",
-            "remove": "Category :",
-            "ignore": False
-        },
-        {
-            "structure_type": "text line",
-            "starts_with": "id category :",
-            "next_starts_with": "Product",
-            "name": "id category",
-            "type": "integer",
-            "remove": "id category :",
-            "ignore": False
-        },
-        {
-            "structure_type": "table",
-            "starts_with": "Product",
-            "next_starts_with": "",    # starting text of next item (empty means no next item)
-            "name": "Inventory Table for Category",
-            "columns": 4,
-            "headers": ["Product", "Units Sold", "Units in Stock", "Unit Price"],
-            "fields": [
-                {"name": "Product", "type": "string", "remove": ""},
-                {"name": "Units Sold", "type": "integer", "remove": ""},
-                {"name": "Units in Stock", "type": "integer", "remove": ""},
-                {"name": "Unit Price", "type": "float", "remove": ""}
-            ],
-        }
-    ]
-}
-
-invoice_config = {
-    "structures": [
-        {
-            "structure_type": "text line",
-            "starts_with": "Order ID",
-            "next_starts_with": "Customer ID",
-            "name": "order id",
-            "type": "integer",
-            "remove": "Order ID:",
-            "ignore": False
-        },
-        {
-            "structure_type": "text line",
-            "starts_with": "Customer ID",
-            "next_starts_with": "Order Date",
-            "name": "customer id",
-            "type": "string",
-            "remove": "Customer ID:",
-            "ignore": False
-        },
-        {
-            "structure_type": "text line",
-            "starts_with": "Order Date",
-            "next_starts_with": "Customer Details:",
-            "name": "order date",
-            "type": "string",
-            "remove": "Order Date:",
-            "ignore": False
-        },
-        {
-            "structure_type": "text line",
-            "starts_with": "Customer Details:",
-            "next_starts_with": "Contact Name:",
-            "name": "customer details heading",
-            "type": "string",
-            "remove": "",
-            "ignore": True
-        },
-        {
-            "structure_type": "key-value table",
-            "starts_with": "Contact Name:",
-            "next_starts_with": "Product Details:",    # starting text of next item (empty means no next item)
-            "name": "Customer Details",
-            "num_of_keys": 7,
-            "keys": [
-                {"name": "Contact Name", "type": "string", "remove": ""},
-                {"name": "Address", "type": "string", "remove": ""},
-                {"name": "City", "type": "string", "remove": ""},
-                {"name": "Postal Code", "type": "integer", "remove": ""},
-                {"name": "Country", "type": "string", "remove": ""},
-                {"name": "Phone", "type": "string", "remove": ""},
-                {"name": "Fax", "type": "string", "remove": ""}
-            ],
-        },
-        {
-            "structure_type": "text line",
-            "starts_with": "Product Details:",
-            "next_starts_with": "Product ID",
-            "name": "product details heading",
-            "type": "string",
-            "remove": "",
-            "ignore": True
-        },
-        {
-            "structure_type": "table",
-            "starts_with": "Product ID",
-            "next_starts_with": "TotalPrice",    # starting text of next item (empty means no next item)
-            "name": "Product Details Table",
-            "columns": 4,
-            "headers": ["Product ID", "Product Name", "Quantity", "Unit Price"],
-            "fields": [
-                {"name": "Product ID", "type": "integer", "remove": ""},
-                {"name": "Product Name", "type": "string", "remove": ""},
-                {"name": "Quantity", "type": "integer", "remove": ""},
-                {"name": "Unit Price", "type": "float", "remove": ""}
-            ],
-        },
-        {
-            "structure_type": "table_summary",
-            "starts_with": "TotalPrice",
-            "next_starts_with": "Page 1",    # starting text of next item (empty means no next item)
-            "name": "Products Total Price",
-            "type": "float",
-            "remove": "",
-        },
-        {
-            "structure_type": "text line",
-            "starts_with": "Page 1",
-            "next_starts_with": "",
-            "name": "page number",
-            "type": "string",
-            "remove": "",
-            "ignore": True
-        },
-    ]
-}
-
-purchase_orders_config = {
-    "structures": [
-        {
-            "structure_type": "text line",
-            "starts_with": "Purchase Orders",
-            "next_starts_with": "Order ID",
-            "name": "title",
-            "type": "string",
-            "remove": "",
-            "ignore": False
-        },
-        {
-            "structure_type": "table",
-            "starts_with": "Order ID",
-            "next_starts_with": "Products",    # starting text of next item (empty means no next item)
-            "name": "Orders Table",
-            "columns": 3,
-            "headers": ["Order ID", "Order Date", "Customer Name"],
-            "fields": [
-                {"name": "Order ID", "type": "integer", "remove": ""},
-                {"name": "Order Date", "type": "string", "remove": ""},
-                {"name": "Customer Name", "type": "string", "remove": ""},
-            ],
-        },
-        {
-            "structure_type": "text line",
-            "starts_with": "Products",
-            "next_starts_with": "Product ID:",
-            "name": "products heading",
-            "type": "string",
-            "remove": "",
-            "ignore": True
-        },
-        {
-            "structure_type": "table",
-            "starts_with": "Product ID:",
-            "next_starts_with": "Page 1",    # starting text of next item (empty means no next item)
-            "name": "Products Table",
-            "columns": 4,
-            "headers": ["Product ID:", "Product:", "Quantity:", "Unit Price:"],
-            "fields": [
-                {"name": "Product ID:", "type": "integer", "remove": ""},
-                {"name": "Product:", "type": "string", "remove": ""},
-                {"name": "Quantity:", "type": "integer", "remove": ""},
-                {"name": "Unit Price:", "type": "float", "remove": ""}
-            ],
-        },
-        {
-            "structure_type": "text line",
-            "starts_with": "Page 1",
-            "next_starts_with": "",
-            "name": "page number",
-            "type": "string",
-            "remove": "",
-            "ignore": True
-        },
-    ]
-}
-
-shipping_orders_config = {
-    "structures": [
-        {
-            "structure_type": "text line",
-            "starts_with": "Order ID:",
-            "next_starts_with": "Shipping Details:",
-            "name": "Order ID",
-            "type": "string",
-            "remove": "Order ID:", # text to remove from the line
-            "ignore": False
-        },
-        {
-            "structure_type": "text line",
-            "starts_with": "Shipping Details:",
-            "next_starts_with": "Customer Details:",
-            "name": "Shipping Details",
-            "type": "string",
-            "remove": "", # text to remove from the line
-            "ignore": False
-        },
-        {
-            "structure_type": "text line",
-            "starts_with": "Customer Details:",
-            "next_starts_with": "Employee Details:",
-            "name": "Customer Details",
-            "type": "string",
-            "remove": "", # text to remove from the line
-            "ignore": False
-        },
-        {
-            "structure_type": "text line",
-            "starts_with": "Employee Details:",
-            "next_starts_with": "Shipper Details:",
-            "name": "Employee Details",
-            "type": "string",
-            "remove": "", # text to remove from the line
-            "ignore": False
-        },
-        {
-            "structure_type": "text line",
-            "starts_with": "Shipper Details:",
-            "next_starts_with": "Order Details:",
-            "name": "Shipper Details",
-            "type": "string",
-            "remove": "", # text to remove from the line
-            "ignore": False
-        },
-        {
-            "structure_type": "text line",
-            "starts_with": "Order Details:",
-            "next_starts_with": "Products:",
-            "name": "Order Details",
-            "type": "string",
-            "remove": "", # text to remove from the line
-            "ignore": False
-        },
-        {
-            "structure_type": "text line",
-            "starts_with": "Products:",
-            "next_starts_with": "Total Price:",
-            "name": "Products",
-            "type": "string",
-            "remove": "", # text to remove from the line
-            "ignore": False
-        },
-        {
-            "structure_type": "text line",
-            "starts_with": "Total Price:",
-            "next_starts_with": "",
-            "name": "Total Price",
-            "type": "string",
-            "remove": "", # text to remove from the line
-            "ignore": False
-        },
-    ]
-}
-# ---------------------------------------------------------------------------------------
-
+from structures import inventory_monthly_config, inventory_monthly_category_config, invoice_config, purchase_orders_config, shipping_orders_config
 
 def extract_info(raw_text, classified_output):
     """
@@ -349,7 +39,7 @@ def extract_info(raw_text, classified_output):
         - these are processed as a single record as they appear in single line in the table  
     """
 
-    print(raw_text)
+    #print(raw_text)
 
     # Split into lines and skip the header
     data_lines = raw_text.strip().split("\n")
@@ -469,20 +159,24 @@ def extract_info(raw_text, classified_output):
         }
     }
     
-    if classified_output == "inventory_monthly":
-        structures = inventory_monthly_config["structures"]
-    elif classified_output == "inventory_monthly_category":
-        structures = inventory_monthly_category_config["structures"]
-    elif classified_output == "invoices":
-        structures = invoice_config["structures"]
-    elif classified_output == "purchase_orders":
-        structures = purchase_orders_config["structures"]
-    elif classified_output == "shipping_orders":
-        structures = shipping_orders_config["structures"]
+    config_map = {
+        "inventory_monthly": inventory_monthly_config,
+        "inventory_monthly_category": inventory_monthly_category_config,
+        "invoices": invoice_config,
+        "purchase_orders": purchase_orders_config,
+        "shipping_orders": shipping_orders_config,
+    }
+
+    config = config_map.get(classified_output)
+    if not config:
+        return []
+
+    structures = config["structures"]
 
     current_structure_idx = 0
     idx = 0
     total_lines = len(data_lines)
+    
     while(idx < total_lines):
         if current_structure_idx < len(structures):
             print(f"Processing line: {data_lines[idx].strip()} with type: {structures[current_structure_idx]['structure_type']} and curent structure index: {current_structure_idx}")
@@ -500,10 +194,13 @@ def extract_info(raw_text, classified_output):
                         else:
                             txt_line =  data_lines[idx].strip()
 
-                        if structures[current_structure_idx]["type"] == "integer":
-                            txt_line = int(txt_line)
-                        elif structures[current_structure_idx]["type"] == "float":
-                            txt_line = float(txt_line)
+                        try:
+                            if structures[current_structure_idx]["type"] == "integer":
+                                txt_line = int(txt_line)
+                            elif structures[current_structure_idx]["type"] == "float":
+                                txt_line = float(txt_line)
+                        except ValueError:
+                            pass
 
                         if classified_output == "shipping_orders":
                             shipping_details_fields = list(shipping_details_records["records"].keys())
@@ -553,7 +250,10 @@ def extract_info(raw_text, classified_output):
 
                                 if data_lines[idx].strip().startswith(total_price_records["name"] + ":"):
                                     txt_line = data_lines[idx].strip().replace(total_price_records["name"] + ":", "").strip()
-                                    txt_line = float(txt_line)
+                                    try:
+                                        txt_line = float(txt_line)
+                                    except ValueError:
+                                        pass
                                     total_price_records["records"]["Total Price"] = txt_line
                                     break
 
@@ -561,11 +261,14 @@ def extract_info(raw_text, classified_output):
                                     product_record = {field: None for field in product_details_fields}
                                     
                                     for i in range(len(product_details_fields)):
+                                        if idx >= total_lines:
+                                            break
                                         if data_lines[idx].strip().startswith(product_details_fields[i] + ":"):
                                             if products_details_records["fields"][i]["remove"] != "":
                                                 txt_line = data_lines[idx].replace(products_details_records["fields"][i]["remove"], "").strip()
                                             else:
                                                 txt_line = data_lines[idx].strip()
+
 
                                             # Extract relevant fields
                                             if products_details_records["fields"][i]["type"] == "string":
@@ -606,21 +309,29 @@ def extract_info(raw_text, classified_output):
                     table_record = {field["name"]: None for field in fields}
                     
                     for i in range((structures[current_structure_idx]["columns"])):
+                        if idx >= total_lines:
+                            break
+
                         if fields[i]["remove"] != "":
                             txt_line = data_lines[idx].replace(fields[i]["remove"], "").strip()
                         else:
                             txt_line = data_lines[idx].strip()
 
                         # Extract relevant fields
-                        if fields[i]["type"] == "string":
+                        try:
+                            if fields[i]["type"] == "string":
+                                table_record[fields[i]["name"]] = txt_line
+                            elif fields[i]["type"] == "integer":
+                                table_record[fields[i]["name"]] = int(txt_line)
+                            elif fields[i]["type"] == "float":
+                                table_record[fields[i]["name"]] = float(txt_line)
+                            else:
+                                # fallback to string if type is wrong
+                                table_record[fields[i]["name"]] = txt_line
+                        except ValueError:
+                            # fallback to string if conversion fails
                             table_record[fields[i]["name"]] = txt_line
-                        elif fields[i]["type"] == "integer":
-                            table_record[fields[i]["name"]] = int(txt_line)
-                        elif fields[i]["type"] == "float":
-                            table_record[fields[i]["name"]] = float(txt_line)
-                        else:
-                            # fallback to string if type is wrong
-                            table_record[fields[i]["name"]] = txt_line
+
                         idx += 1
                     
                     if classified_output == "inventory_monthly":
@@ -682,22 +393,30 @@ def extract_info(raw_text, classified_output):
                 table_record = {key["name"]: None for key in keys}
                 
                 for i in range((structures[current_structure_idx]["num_of_keys"])):
+                    if idx >= total_lines:
+                        break
+                    
                     if keys[i]["remove"] != "":
                         # next item after key is the value
                         txt_line = data_lines[idx+1].replace(keys[i]["remove"], "").strip()
                     else:
                         txt_line = data_lines[idx+1].strip()
 
-                    # Extract relevant fields
-                    if keys[i]["type"] == "string":
+                    # Extract relevant 
+                    try:
+                        if keys[i]["type"] == "string":
+                            table_record[keys[i]["name"]] = txt_line
+                        elif keys[i]["type"] == "integer":
+                            table_record[keys[i]["name"]] = int(txt_line)
+                        elif keys[i]["type"] == "float":
+                            table_record[keys[i]["name"]] = float(txt_line)
+                        else:
+                            # fallback to string if type is wrong
+                            table_record[fields[i]["name"]] = txt_line
+                    except ValueError:
+                        # fallback to string if conversion fails
                         table_record[keys[i]["name"]] = txt_line
-                    elif keys[i]["type"] == "integer":
-                        table_record[keys[i]["name"]] = int(txt_line)
-                    elif keys[i]["type"] == "float":
-                        table_record[keys[i]["name"]] = float(txt_line)
-                    else:
-                        # fallback to string if type is wrong
-                        table_record[fields[i]["name"]] = txt_line
+
                     # go to next key
                     idx += 2
                 
@@ -715,10 +434,14 @@ def extract_info(raw_text, classified_output):
                 if data_lines[idx].strip().startswith(structures[current_structure_idx]["starts_with"]):
                     # next to summary name cell, we have the value
                     txt_line = data_lines[idx+1].strip()
-                    if structures[current_structure_idx]["type"] == "integer":
-                        txt_line = int(txt_line)
-                    elif structures[current_structure_idx]["type"] == "float":
-                        txt_line = float(txt_line)
+
+                    try:
+                        if structures[current_structure_idx]["type"] == "integer":
+                            txt_line = int(txt_line)
+                        elif structures[current_structure_idx]["type"] == "float":
+                            txt_line = float(txt_line)
+                    except ValueError:
+                        pass
 
                     if classified_output == "invoices":
                         invoice_total_price_details["records"]["Total Price"] = txt_line
@@ -735,6 +458,7 @@ def extract_info(raw_text, classified_output):
             # progress through last lines
             idx += 1
     
+    # append the predefined objects to output that hold some data specific to a document structure
     if classified_output == "inventory_monthly":
         records.append(inv_mon_records)
     if classified_output == "inventory_monthly_category":
@@ -753,6 +477,7 @@ def extract_info(raw_text, classified_output):
         records.append(shipper_details_records)
         records.append(order_details_records)
         records.append({
+            # leave out fields as not needed in output
             "name": products_details_records["name"],
             "records": products_details_records["records"]
         })
