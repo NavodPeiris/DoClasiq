@@ -60,6 +60,8 @@ docker-compose up -d .
 
 This will download the pre-built images and start the UI and APIs.
 
+visit: http://localhost:8502 for accessing the UI
+
 ### 3. How to use the app
 
 Use test documents in test_docs folder to test  
