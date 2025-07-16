@@ -76,10 +76,6 @@ Model Training Performance:
 
 Model has acheived **0.0008 evaluation loss** and **1.0 evaluation accuracy**
 
-Model Inference Performance:
-
-![model_inference_performance]()
-
 ### 5. Design choices
 
 #### Why streamlit for UI?
